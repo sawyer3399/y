@@ -10,24 +10,35 @@ timeout_duration=1
 
 update_passwords() {
     read -p "Team to update passwords: " team_number
+    read -p "New password to set: " new_password
 
     for IP in "${IPs[@]}"; do
-    	team_number_from_IP=$(echo "$IP" | cut -d'.' -f3)
+        team_number_from_IP=$(echo "$IP" | cut -d'.' -f3)
 
-   	if [[ "$team_number_from_IP" == "$team_number" ]]; then
-	    sshpass -p "$default_password" ssh -o StrictHostKeyChecking=no ConnectTimeout=$timeout_duration "$user@$IP" "
-       		echo \"$default_password\" | sudo -S passwd 
+        if [[ "$team_number_from_IP" == "$team_number" ]]; then
+            echo "Updating passwords for team $team_number on IP: $IP"
+
+            sshpass -p "$default_password" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=$timeout_duration "$admin@$IP" "
+                echo \"$default_password\" | sudo -S bash -c '
+                    for user in \$(cut -d: -f1 /etc/passwd); do
+                        echo \"$user:$new_password\" | sudo -S chpasswd
+                    done
+                '
             "
-
+        fi
+    done
 }
 
+
 main() {
+    # Populate the IP list
     for ((team=1; team<=number_of_teams; team++)); do
         for host_id in "${host_ids[@]}"; do
             IPs+=("$network_id.$team.$host_id")
         done
     done
 
+    # Menu loop
     while true; do
         echo "DAKOTA CONQUEST SCRIPTS"
         echo "1. Update Passwords"
@@ -35,7 +46,7 @@ main() {
         read -p "Choose an option: " choice
 
         case $choice in
-            1) send_backdoor ;;
+            1) update_passwords ;;
             2) break ;;
             *) echo "Invalid choice. Please try again." ;;
         esac
