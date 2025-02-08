@@ -18,13 +18,11 @@ clear_logs() {
             echo "Trying to SSH @ $IP"
             
             sshpass -p "$password" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=$timeout_duration "$admin@$IP" "
-                echo "$password" | sudo -S bash -c '
+                echo '$password' | sudo -S bash -c '
                     cat /dev/null > /var/log/syslog
                     cat /dev/null > /var/log/auth.log
                     cat /dev/null > /var/log/kern.log
-                '
-
-                echo "Logs cleared successfully @ $IP"
+                ' && echo 'Logs cleared successfully @ $IP'
             "
 
             if [[ $? -ne 0 ]]; then
@@ -46,16 +44,16 @@ update_passwords() {
             echo "Trying to SSH @ $IP"
 
             sshpass -p "$original_password" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=$timeout_duration "$admin@$IP" "
-                echo "$original_password" | sudo -S rm -f ~/.ssh/authorized_keys
+                echo '$original_password' | sudo -S rm -f ~/.ssh/authorized_keys
 
-                echo "$original_password" | sudo -S bash -c '
+                echo '$original_password' | sudo -S bash -c '
                     for user in $(cut -d: -f1 /etc/passwd); do
-                        echo "$user:$password" | chpasswd 
+                        echo '$user:$password' | chpasswd 
                         
                         if [[ $? -ne 0 ]]; then
-                            echo "Password failed to update for $user @ $IP"
+                            echo 'Password failed to update for $user @ $IP'
                         else
-                            echo "Password successfully updated for $user @ $IP"
+                            echo 'Password successfully updated for $user @ $IP'
                         fi
                     done
                 '
