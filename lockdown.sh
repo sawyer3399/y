@@ -30,11 +30,7 @@ main() {
                 '
                 echo \"$new_password\" | sudo -S apt reinstall libpam-modules
                 echo \"$new_password\" | sudo -S systemctl restart sshd
-            "; then
-                echo "SUCCESS (SSH Config): $IP"
-            else
-                echo -e "!!!!!!!!!!!!!!!!!!!!!\nFAIL: $IP\n!!!!!!!!!!!!!!!!!!!!!"
-            fi
+            "
         fi
     done
 }
